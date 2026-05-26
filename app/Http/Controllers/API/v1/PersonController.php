@@ -122,7 +122,7 @@ class PersonController extends Controller
             new OA\Parameter(name: 'numero_documento', in: 'query', required: true, schema: new OA\Schema(type: 'string'), description: 'Número del documento'),
         ],
         responses: [
-            new OA\Response(response: 200, description: "Persona encontrada", content: new OA\JsonContent(ref: '#/components/schemas/Person')), 
+            new OA\Response(response: 200, description: "Persona encontrada"),
             new OA\Response(response: 404, description: "No encontrada"),
         ]
     )]
@@ -140,6 +140,5 @@ class PersonController extends Controller
         }
 
         return response()->json(['success' => true, 'data' => new PersonResource($person->load(['contacts','addresses']))]);
-    }
 }
 }

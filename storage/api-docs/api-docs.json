@@ -148,6 +148,59 @@
                 ],
                 "summary": "Obtener persona por UUID",
                 "operationId": "0f0f6cbd1aa9d793c61a2f1007673fda",
+                "parameters": [
+                    {
+                        "name": "uuid",
+                        "in": "path",
+                        "description": "UUID de la persona",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Persona encontrada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/persons/find": {
+            "get": {
+                "tags": [
+                    "Persons"
+                ],
+                "summary": "Buscar persona por tipo y número de documento",
+                "operationId": "c48921a20f73ed5cabe168bbac53f0ad",
+                "parameters": [
+                    {
+                        "name": "tipo_documento",
+                        "in": "query",
+                        "description": "Tipo de documento (CC, TI, CE, etc.)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "numero_documento",
+                        "in": "query",
+                        "description": "Número del documento",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Persona encontrada"
