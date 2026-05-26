@@ -7,7 +7,7 @@ namespace App\Repositories;
 use App\Interfaces\Repositories\PersonRepositoryInterface;
 use App\Models\ApiClient;
 use App\Models\AuditLog;
-use App\Models\Person;
+use App\Models\Persona;
 use App\Models\PersonProjectRelation;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;

@@ -7,7 +7,7 @@ namespace App\Services;
 use App\DTOs\PersonData;
 use App\Interfaces\Repositories\PersonRepositoryInterface;
 use App\Models\ApiClient;
-use App\Models\Person;
+use App\Models\Persona;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;

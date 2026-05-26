@@ -9,58 +9,62 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Central Master Data Management - Persons table
-     * Uses UUIDs exclusively. No incremental IDs exposed.
-     * Unique constraint on (tipo_documento, numero_documento) for identity resolution.
+     * Crear tabla 'personas' con campos en español.
      */
     public function up(): void
     {
-        Schema::create('persons', function (Blueprint $table) {
+        Schema::create('personas', function (Blueprint $table) {
             $table->uuid('id')->primary();
 
-            // Core identification - critical for MDM deduplication
-            $table->string('tipo_documento', 10); // CC, TI, CE, NIT, PP, RC, etc.
-            $table->string('numero_documento', 50);
+            // Obligatorios
+            $table->string('nombre_completo', 300);
+            $table->string('tipo_documento', 20);
+            $table->string('numero_documento', 100);
 
-            // Personal information
-            $table->string('nombres', 150);
-            $table->string('apellidos', 150);
-            $table->date('fecha_nacimiento')->nullable();
-            $table->enum('genero', ['M', 'F', 'O', 'N'])->nullable(); // Masculino, Femenino, Otro, No especificado
-            $table->string('estado_civil', 30)->nullable();
-            $table->string('ocupacion', 150)->nullable();
-            $table->string('nacionalidad', 100)->default('COLOMBIANA');
+            // Opcionales
+            $table->unsignedSmallInteger('edad')->nullable();
+            $table->date('nacimiento')->nullable();
+            $table->string('genero', 10)->nullable();
 
-            // Data provenance & quality (MDM critical fields)
+            $table->string('direccion', 500)->nullable();
+            $table->string('sector', 150)->nullable();
+            $table->string('barrio', 150)->nullable();
+            $table->string('comuna', 80)->nullable();
+
+            $table->string('telefono', 50)->nullable();
+            $table->string('email', 150)->nullable();
+
+            $table->string('condicion', 150)->nullable();
+            $table->string('etnia', 150)->nullable();
+            $table->string('nivel_estudio', 150)->nullable();
+            $table->boolean('dignatario')->default(false);
+
+            // Provenance & quality
+            $table->unsignedTinyInteger('data_quality_score')->default(50);
+            $table->string('source_project', 100)->nullable();
+            $table->timestamp('last_verified_at')->nullable();
+
             $table->uuid('created_by_client_id')->nullable();
             $table->uuid('updated_by_client_id')->nullable();
-            $table->string('source_project', 100)->nullable(); // e.g. 'vive-digital', 'votaciones'
-            $table->timestamp('last_verified_at')->nullable();
-            $table->unsignedTinyInteger('data_quality_score')->default(50); // 0-100 confidence
 
-            // Flexible metadata for future extensions without schema changes
             $table->json('metadata')->nullable();
 
             $table->timestamps();
             $table->softDeletes();
 
-            // Critical unique constraint for Master Data
-            $table->unique(['tipo_documento', 'numero_documento'], 'persons_document_unique');
+            // Constraints
+            $table->unique(['tipo_documento', 'numero_documento'], 'personas_documento_unico');
 
-            // Performance indexes for high-volume queries
-            $table->index(['nombres', 'apellidos']);
-            $table->index('created_at');
-            $table->index('data_quality_score');
-            $table->index('source_project');
+            // Indexes
+            $table->index(['nombre_completo']);
+            $table->index(['comuna']);
+            $table->index(['barrio']);
+            $table->index(['data_quality_score']);
         });
-
-        // NOTE: Foreign keys to api_clients are intentionally omitted for horizontal scaling.
-        // Integrity is enforced at application/repository level + data quality rules.
-        // Add FKs in production only if using single DB instance without sharding plans.
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('persons');
+        Schema::dropIfExists('personas');
     }
 };

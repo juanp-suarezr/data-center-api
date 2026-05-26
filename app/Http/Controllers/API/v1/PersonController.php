@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\API\v1;
 
 use App\DTOs\PersonData;
+use App\Models\Persona;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\v1\PersonSearchRequest;
 use App\Http\Requests\API\v1\PersonSyncRequest;

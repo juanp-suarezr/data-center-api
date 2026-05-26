@@ -19,7 +19,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
 
             $table->uuid('person_id');
-            $table->foreign('person_id')->references('id')->on('persons')->onDelete('cascade');
+            $table->foreign('person_id')->references('id')->on('personas')->onDelete('cascade');
 
             $table->uuid('api_client_id');
             $table->foreign('api_client_id')->references('id')->on('api_clients')->onDelete('cascade');

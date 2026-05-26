@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Designed for high-volume government use.
  * All external systems must go through this entity for person identity.
  */
-class Person extends Model
+class Persona extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
@@ -37,11 +37,24 @@ class Person extends Model
         'estado_civil',
         'ocupacion',
         'nacionalidad',
+        'identificacion',
+        'edad',
         'created_by_client_id',
         'updated_by_client_id',
         'source_project',
         'last_verified_at',
         'data_quality_score',
+        'direccion_text',
+        'sector',
+        'barrio',
+        'comuna',
+        'telefono_primary',
+        'email_primary',
+        'condicion',
+        'etnia',
+        'nivel_estudio',
+        'dignatario',
+        'nacimiento',
         'metadata',
     ];
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Interfaces\Repositories;
 
-use App\Models\Person;
+use App\Models\Persona;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
