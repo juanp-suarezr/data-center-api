@@ -1,0 +1,97 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\DTOs\PersonData;
+use App\Interfaces\Repositories\PersonRepositoryInterface;
+use App\Models\ApiClient;
+use App\Models\Person;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class PersonService
+{
+    public function __construct(
+        private readonly PersonRepositoryInterface $repository
+    ) {}
+
+    /**
+     * Search for existing person - primary entry point for all clients.
+     * Uses caching for hot paths.
+     */
+    public function searchPerson(array $filters, int $perPage = 15): LengthAwarePaginator
+    {
+        $cacheKey = 'person_search_'.md5(json_encode($filters).$perPage);
+
+        return Cache::remember($cacheKey, 60, function () use ($filters, $perPage) {
+            return $this->repository->search($filters, $perPage);
+        });
+    }
+
+    public function findByDocument(string $tipo, string $numero): ?Person
+    {
+        $person = $this->repository->findByDocument($tipo, $numero);
+
+        if ($person) {
+            Log::info('Person found by document', ['tipo' => $tipo, 'numero' => $numero, 'uuid' => $person->id]);
+        }
+
+        return $person;
+    }
+
+    /**
+     * Create or update based on document uniqueness (idempotent sync).
+     * This is the core "sync" endpoint logic.
+     */
+    public function syncPerson(PersonData $dto, ApiClient $client): array
+    {
+        return DB::transaction(function () use ($dto, $client) {
+            $existing = $this->repository->findByDocument($dto->tipoDocumento, $dto->numeroDocumento);
+
+            if ($existing) {
+                $old = $existing->toArray();
+
+                $updated = $this->repository->update($existing, $dto->toArray() + [
+                    'updated_by_client_id' => $client->id,
+                    'source_project' => $dto->sourceProject ?? $client->slug,
+                ]);
+
+                $this->repository->attachProjectRelation($updated, $client->id, [
+                    'last_action' => 'update',
+                    'data_quality_score' => $updated->data_quality_score,
+                ]);
+
+                $this->repository->recordAudit($updated, 'update', $old, $updated->toArray(), $client->id);
+
+                return [
+                    'action' => 'updated',
+                    'person' => $updated->load(['contacts', 'addresses']),
+                    'message' => 'Persona actualizada exitosamente',
+                ];
+            }
+
+            // Create new
+            $person = $this->repository->create($dto->toArray() + [
+                'created_by_client_id' => $client->id,
+                'source_project' => $dto->sourceProject ?? $client->slug,
+            ]);
+
+            $this->repository->recordAudit($person, 'create', null, $person->toArray(), $client->id);
+
+            return [
+                'action' => 'created',
+                'person' => $person->load(['contacts', 'addresses']),
+                'message' => 'Persona registrada exitosamente en el Data Center',
+            ];
+        });
+    }
+
+    public function getPerson(string $uuid): ?Person
+    {
+        return $this->repository->findByUuid($uuid);
+    }
+}

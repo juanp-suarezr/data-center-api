@@ -1,0 +1,227 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Central Data API",
+        "description": "Centralized Master Data API - Personas (MDM)",
+        "contact": {
+            "name": "API Support",
+            "email": "support@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local server"
+        }
+    ],
+    "paths": {
+        "/api/v1/auth/token": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Obtener token de acceso para un proyecto cliente",
+                "operationId": "6799242c0b2b9b869620d72da6dd4a63",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "slug",
+                                    "secret"
+                                ],
+                                "properties": {
+                                    "slug": {
+                                        "type": "string"
+                                    },
+                                    "secret": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token generado exitosamente",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "access_token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string"
+                                        },
+                                        "client": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string"
+                                                },
+                                                "name": {
+                                                    "type": "string"
+                                                },
+                                                "slug": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Credenciales inválidas"
+                    }
+                }
+            }
+        },
+        "/api/v1/persons/search": {
+            "get": {
+                "tags": [
+                    "Persons"
+                ],
+                "summary": "Buscar persona por documento o datos básicos",
+                "operationId": "0d45e2c6de4b741aeb441d7f403d7df5",
+                "responses": {
+                    "200": {
+                        "description": "Resultados de búsqueda"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/persons/sync": {
+            "post": {
+                "tags": [
+                    "Persons"
+                ],
+                "summary": "Crear o actualizar persona (idempotente)",
+                "operationId": "050f47610959a5ddf31b9087af0fca25",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PersonSyncRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Persona creada"
+                    },
+                    "200": {
+                        "description": "Persona actualizada"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/persons/{uuid}": {
+            "get": {
+                "tags": [
+                    "Persons"
+                ],
+                "summary": "Obtener persona por UUID",
+                "operationId": "0f0f6cbd1aa9d793c61a2f1007673fda",
+                "responses": {
+                    "200": {
+                        "description": "Persona encontrada"
+                    },
+                    "404": {
+                        "description": "No encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "PersonSyncRequest": {
+                "properties": {
+                    "tipo_documento": {
+                        "type": "string"
+                    },
+                    "numero_documento": {
+                        "type": "string"
+                    },
+                    "nombres": {
+                        "type": "string"
+                    },
+                    "apellidos": {
+                        "type": "string"
+                    },
+                    "fecha_nacimiento": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "genero": {
+                        "type": "string"
+                    },
+                    "correo": {
+                        "type": "string"
+                    },
+                    "telefono": {
+                        "type": "string"
+                    },
+                    "direccion": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Provide the access token. Example: \"Bearer {token}\""
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Persons",
+            "description": "Master Data Management - Personas"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}
