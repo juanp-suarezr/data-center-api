@@ -60,10 +60,10 @@ class PersonService
                     'source_project' => $dto->sourceProject ?? $client->slug,
                 ]);
 
-                $this->repository->attachProjectRelation($updated, $client->id, [
-                    'last_action' => 'update',
-                    'data_quality_score' => $updated->data_quality_score,
-                ]);
+                 $this->repository->attachProjectRelation($updated, $client->slug, [
+                     'last_action' => 'update',
+                     'data_quality_score' => $updated->data_quality_score,
+                 ]);
 
                 $this->repository->recordAudit($updated, 'update', $old, $updated->toArray(), $client->id);
 
@@ -74,13 +74,19 @@ class PersonService
                 ];
             }
 
-            // Create new
-            $person = $this->repository->create($dto->toArray() + [
-                'created_by_client_id' => $client->id,
-                'source_project' => $dto->sourceProject ?? $client->slug,
-            ]);
+             // Create new
+             $person = $this->repository->create($dto->toArray() + [
+                 'created_by_client_id' => $client->id,
+                 'source_project' => $dto->sourceProject ?? $client->slug,
+             ]);
 
-            $this->repository->recordAudit($person, 'create', null, $person->toArray(), $client->id);
+             $this->repository->attachProjectRelation($person, $client->slug, [
+                 'trust_level' => 'medium',
+                 'data_quality_score' => $person->data_quality_score,
+                 'last_action' => 'create',
+             ]);
+
+             $this->repository->recordAudit($person, 'create', null, $person->toArray(), $client->id);
 
             return [
                 'action' => 'created',

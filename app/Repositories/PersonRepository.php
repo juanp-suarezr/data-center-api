@@ -15,22 +15,22 @@ use Illuminate\Support\Facades\DB;
 
 class PersonRepository implements PersonRepositoryInterface
 {
-    public function findByUuid(string $uuid): ?Person
+    public function findByUuid(string $uuid): ?Persona
     {
-        return Person::with(['contacts', 'addresses', 'projectRelations.apiClient'])
+        return Persona::with(['contacts', 'addresses', 'projectRelations.apiClient'])
             ->find($uuid);
     }
 
-    public function findByDocument(string $tipoDocumento, string $numeroDocumento): ?Person
+    public function findByDocument(string $tipoDocumento, string $numeroDocumento): ?Persona
     {
-        return Person::with(['contacts', 'addresses'])
+        return Persona::with(['contacts', 'addresses'])
             ->byDocument($tipoDocumento, $numeroDocumento)
             ->first();
     }
 
     public function search(array $criteria, int $perPage = 15): LengthAwarePaginator
     {
-        $query = Person::query()->with(['primaryContact', 'primaryAddress']);
+        $query = Persona::query()->with(['primaryContact', 'primaryAddress']);
 
         if (! empty($criteria['document'])) {
             $query->where('numero_documento', 'like', '%'.$criteria['document'].'%');
@@ -52,25 +52,16 @@ class PersonRepository implements PersonRepositoryInterface
             ->paginate($perPage);
     }
 
-    public function create(array $data): Person
+    public function create(array $data): Persona
     {
         return DB::transaction(function () use ($data) {
-            $person = Person::create($data);
-
-            // Auto-create project relation if client provided
-            if (! empty($data['created_by_client_id'])) {
-                $this->attachProjectRelation($person, $data['created_by_client_id'], [
-                    'trust_level' => 'medium',
-                    'data_quality_score' => $person->data_quality_score,
-                    'last_action' => 'create',
-                ]);
-            }
+            $person = Persona::create($data);
 
             return $person;
         });
     }
 
-    public function update(Person $person, array $data): Person
+    public function update(Persona $person, array $data): Persona
     {
         $old = $person->toArray();
 
@@ -83,20 +74,22 @@ class PersonRepository implements PersonRepositoryInterface
 
     public function existsByDocument(string $tipoDocumento, string $numeroDocumento): bool
     {
-        return Person::byDocument($tipoDocumento, $numeroDocumento)->exists();
+        return Persona::byDocument($tipoDocumento, $numeroDocumento)->exists();
     }
 
-    public function getProjectRelations(Person $person): Collection
+    public function getProjectRelations(Persona $person): Collection
     {
         return $person->projectRelations()->with('apiClient')->get();
     }
 
-    public function attachProjectRelation(Person $person, string $clientId, array $relationData): void
+    public function attachProjectRelation(Persona $person, string $apiClientSlug, array $relationData): void
     {
+        $apiClient = ApiClient::where('slug', $apiClientSlug)->firstOrFail();
+
         PersonProjectRelation::updateOrCreate(
             [
                 'person_id' => $person->id,
-                'api_client_id' => $clientId,
+                'api_client_id' => $apiClient->id,
             ],
             array_merge($relationData, [
                 'last_synced_at' => now(),
@@ -104,7 +97,7 @@ class PersonRepository implements PersonRepositoryInterface
         );
     }
 
-    public function recordAudit(Person $person, string $action, ?array $old = null, ?array $new = null, ?string $clientId = null, ?string $requestId = null): void
+    public function recordAudit(Persona $person, string $action, ?array $old = null, ?array $new = null, ?string $clientId = null, ?string $requestId = null): void
     {
         AuditLog::record(
             $person,
