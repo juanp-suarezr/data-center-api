@@ -16,7 +16,7 @@ use OpenApi\Attributes as OA;
     description: "Centralized Master Data API - Personas (MDM)",
     contact: new OA\Contact(name: "API Support", email: "support@example.com")
 )]
-#[OA\Server(url: "http://localhost:8000", description: "Local server")]
+#[OA\Server(url: "http://localhost:8001", description: "Local server")]
 #[OA\SecurityScheme(
     securityScheme: "bearerAuth",
     type: "http",

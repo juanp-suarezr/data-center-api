@@ -59,8 +59,8 @@ docker-compose exec app php artisan key:generate
 docker-compose exec app php artisan migrate --seed
 
 # 5. Acceder
-# API: http://localhost:8088/api/v1
-# Swagger: http://localhost:8088/api/documentation
+# API: http://localhost:8001/api/v1
+# Swagger: http://localhost:8001/api/documentation
 # phpMyAdmin: http://localhost:8081
 ```
 
