@@ -20,47 +20,36 @@ class Persona extends Model
 {
     use HasFactory, HasUuids, SoftDeletes;
 
-    // Table name forced to 'persons' to match migrations (default pluralization would be 'people')
-    protected $table = 'persons';
-
-    // UUID primary keys are non-incrementing strings
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $table = 'personas';
 
     protected $fillable = [
+        'nombre_completo',
         'tipo_documento',
         'numero_documento',
-        'nombres',
-        'apellidos',
-        'fecha_nacimiento',
-        'genero',
-        'estado_civil',
-        'ocupacion',
-        'nacionalidad',
-        'identificacion',
         'edad',
-        'created_by_client_id',
-        'updated_by_client_id',
-        'source_project',
-        'last_verified_at',
-        'data_quality_score',
-        'direccion_text',
+        'nacimiento',
+        'genero',
+        'direccion',
         'sector',
         'barrio',
         'comuna',
-        'telefono_primary',
-        'email_primary',
+        'telefono',
+        'email',
         'condicion',
         'etnia',
         'nivel_estudio',
         'dignatario',
-        'nacimiento',
+        'data_quality_score',
+        'source_project',
+        'last_verified_at',
+        'created_by_client_id',
+        'updated_by_client_id',
         'metadata',
     ];
 
     protected $casts = [
         'id' => 'string',
-        'fecha_nacimiento' => 'date',
+        'nacimiento' => 'date',
         'last_verified_at' => 'datetime',
         'data_quality_score' => 'integer',
         'metadata' => 'array',
@@ -70,12 +59,12 @@ class Persona extends Model
 
     public function contacts(): HasMany
     {
-        return $this->hasMany(PersonContact::class)->orderBy('is_primary', 'desc');
+        return $this->hasMany(PersonContact::class, 'person_id')->orderBy('is_primary', 'desc');
     }
 
     public function addresses(): HasMany
     {
-        return $this->hasMany(PersonAddress::class)->orderBy('is_primary', 'desc');
+        return $this->hasMany(PersonAddress::class, 'person_id')->orderBy('is_primary', 'desc');
     }
 
     public function projectRelations(): HasMany
@@ -85,12 +74,12 @@ class Persona extends Model
 
     public function primaryContact(): HasOne
     {
-        return $this->hasOne(PersonContact::class)->where('is_primary', true);
+        return $this->hasOne(PersonContact::class, 'person_id')->where('is_primary', true);
     }
 
     public function primaryAddress(): HasOne
     {
-        return $this->hasOne(PersonAddress::class)->where('is_primary', true);
+        return $this->hasOne(PersonAddress::class, 'person_id')->where('is_primary', true);
     }
 
     // ==================== Scopes ====================

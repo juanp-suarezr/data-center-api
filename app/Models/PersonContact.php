@@ -36,7 +36,7 @@ class PersonContact extends Model
 
     public function person(): BelongsTo
     {
-        return $this->belongsTo(Person::class);
+        return $this->belongsTo(Persona::class, 'person_id');
     }
 
     public function verifiedBy(): BelongsTo

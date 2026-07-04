@@ -9,31 +9,49 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PersonResource extends JsonResource
 {
+    private function splitNombreCompleto(): array
+    {
+        $parts = explode(' ', trim((string) $this->nombre_completo));
+        if (count($parts) === 0) {
+            return ['nombres' => '', 'apellidos' => ''];
+        }
+        if (count($parts) === 1) {
+            return ['nombres' => $parts[0], 'apellidos' => ''];
+        }
+        return [
+            'nombres' => $parts[0],
+            'apellidos' => implode(' ', array_slice($parts, 1)),
+        ];
+    }
+
     public function toArray(Request $request): array
     {
+        $nameParts = $this->splitNombreCompleto();
+
         return [
             'id' => $this->id,
             'tipo_documento' => $this->tipo_documento,
             'numero_documento' => $this->numero_documento,
-            'nombres' => $this->nombres,
-            'apellidos' => $this->apellidos,
-            'full_name' => $this->full_name,
-            'fecha_nacimiento' => $this->fecha_nacimiento?->format('Y-m-d'),
+            'nombre_completo' => $this->nombre_completo,
+            'nombres' => $nameParts['nombres'],
+            'apellidos' => $nameParts['apellidos'],
+            'full_name' => $this->nombre_completo,
+            'fecha_nacimiento' => $this->nacimiento?->format('Y-m-d'),
             'nacimiento' => $this->nacimiento?->format('Y-m-d'),
-            'edad' => $this->edad,
+            'edad' => (int) $this->edad,
             'genero' => $this->genero,
-            'identificacion' => $this->identificacion,
-            'direccion' => $this->direccion_text,
+            'identificacion' => $this->tipo_documento.'-'.$this->numero_documento,
+            'direccion' => $this->direccion,
             'sector' => $this->sector,
             'barrio' => $this->barrio,
             'comuna' => $this->comuna,
-            'telefono' => $this->telefono_primary,
-            'email' => $this->email_primary,
+            'telefono' => $this->telefono,
+            'email' => $this->email,
             'condicion' => $this->condicion,
             'etnia' => $this->etnia,
             'nivel_estudio' => $this->nivel_estudio,
             'dignatario' => (bool) $this->dignatario,
-            'data_quality_score' => $this->data_quality_score,
+            'data_quality_score' => (int) $this->data_quality_score,
             'last_verified_at' => $this->last_verified_at?->toISOString(),
             'source_project' => $this->source_project,
             'contacts' => PersonContactResource::collection($this->whenLoaded('contacts')),

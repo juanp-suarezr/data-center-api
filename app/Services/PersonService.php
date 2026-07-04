@@ -32,7 +32,7 @@ class PersonService
         });
     }
 
-    public function findByDocument(string $tipo, string $numero): ?Person
+    public function findByDocument(string $tipo, string $numero): ?Persona
     {
         $person = $this->repository->findByDocument($tipo, $numero);
 
@@ -55,7 +55,10 @@ class PersonService
             if ($existing) {
                 $old = $existing->toArray();
 
-                $updated = $this->repository->update($existing, $dto->toArray() + [
+                $updateData = $dto->toArray();
+                unset($updateData['data_quality_score']);
+
+                $updated = $this->repository->update($existing, $updateData + [
                     'updated_by_client_id' => $client->id,
                     'source_project' => $dto->sourceProject ?? $client->slug,
                 ]);
@@ -96,7 +99,7 @@ class PersonService
         });
     }
 
-    public function getPerson(string $uuid): ?Person
+    public function getPerson(string $uuid): ?Persona
     {
         return $this->repository->findByUuid($uuid);
     }

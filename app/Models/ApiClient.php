@@ -58,7 +58,7 @@ class ApiClient extends Model
     public function persons(): HasManyThrough
     {
         return $this->hasManyThrough(
-            Person::class,
+            Persona::class,
             PersonProjectRelation::class,
             'api_client_id',
             'id',
