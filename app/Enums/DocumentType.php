@@ -14,6 +14,7 @@ enum DocumentType: string
     case REGISTRO_CIVIL = 'RC';
     case PERMISO_ESPECIAL = 'PEP';
     case PERMISO_PROTECCION = 'PPT';
+    case OTRO = 'O';
 
     public static function values(): array
     {
@@ -31,6 +32,7 @@ enum DocumentType: string
             self::REGISTRO_CIVIL => 'Registro Civil',
             self::PERMISO_ESPECIAL => 'Permiso Especial de Permanencia',
             self::PERMISO_PROTECCION => 'Permiso de Protección Temporal',
+            self::OTRO => 'Otro',
         };
     }
 }
