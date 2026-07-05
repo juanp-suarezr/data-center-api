@@ -38,11 +38,14 @@ class PersonSyncRequest extends FormRequest
 
     protected function failedValidation(Validator $validator): void
     {
+        $errors = $validator->errors();
+        $errorMessages = $errors->all();
+        
         throw new HttpResponseException(
             response()->json([
                 'success' => false,
-                'message' => 'Error de validación',
-                'errors' => $validator->errors(),
+                'message' => 'Error de validación: ' . implode('; ', $errorMessages),
+                'errors' => $errors,
             ], 422)
         );
     }
