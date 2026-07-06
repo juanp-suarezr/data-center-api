@@ -87,6 +87,96 @@
                 }
             }
         },
+        "/api/v1/bulk/persons": {
+            "post": {
+                "tags": [
+                    "Bulk Upload"
+                ],
+                "summary": "Cargar personas masivamente desde CSV",
+                "description": "Inicia un proceso en cola para cargar personas desde un archivo CSV. El archivo debe tener encabezados con los campos requeridos.",
+                "operationId": "d3f2034a8124f8c9ac54ae379684de0a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "description": "Archivo CSV con datos de personas",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "skip_invalid": {
+                                        "description": "Omitir registros inválidos",
+                                        "type": "boolean"
+                                    },
+                                    "update_existing": {
+                                        "description": "Actualizar registros existentes",
+                                        "type": "boolean"
+                                    },
+                                    "source_project": {
+                                        "description": "Proyecto origen",
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Procesamiento en cola iniciado"
+                    },
+                    "422": {
+                        "description": "Validación fallida"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/bulk/persons/{batchId}": {
+            "get": {
+                "tags": [
+                    "Bulk Upload"
+                ],
+                "summary": "Obtener estado del procesamiento masivo",
+                "description": "Consulta el progreso del procesamiento de carga masiva",
+                "operationId": "1abb224b2df159c161c096625aab3c2e",
+                "parameters": [
+                    {
+                        "name": "batchId",
+                        "in": "path",
+                        "description": "ID del batch de procesamiento",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estado del batch"
+                    },
+                    "404": {
+                        "description": "Batch no encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/persons/search": {
             "get": {
                 "tags": [
@@ -263,6 +353,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Bulk Upload",
+            "description": "Massive data loading operations"
+        },
         {
             "name": "Persons",
             "description": "Master Data Management - Personas"

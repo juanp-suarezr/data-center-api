@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\API\v1\AuthController;
+use App\Http\Controllers\API\v1\BulkUploadController;
 use App\Http\Controllers\API\v1\PersonController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,12 @@ Route::prefix('v1')->group(function () {
             Route::get('/find', [PersonController::class, 'findByDocument'])->name('api.persons.find');
             Route::post('/sync', [PersonController::class, 'sync'])->name('api.persons.sync');
             Route::get('/{uuid}', [PersonController::class, 'show'])->name('api.persons.show');
+        });
+
+        // Bulk upload endpoints
+        Route::prefix('bulk')->group(function () {
+            Route::post('/persons', [BulkUploadController::class, 'uploadPersons'])->name('api.bulk.persons.upload');
+            Route::get('/persons/{batchId}', [BulkUploadController::class, 'getBatchStatus'])->name('api.bulk.persons.status');
         });
 
         // Future: more resources
