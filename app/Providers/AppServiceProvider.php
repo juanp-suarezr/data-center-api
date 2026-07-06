@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Console\Kernel;
 use App\Interfaces\Repositories\PersonRepositoryInterface;
 use App\Repositories\PersonRepository;
 use Illuminate\Cache\RateLimiting\Limit;
