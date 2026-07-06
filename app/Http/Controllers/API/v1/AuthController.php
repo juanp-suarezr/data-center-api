@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ApiClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -62,18 +63,36 @@ class AuthController extends Controller
             ->where('is_active', true)
             ->first();
 
+        Log::info('Token request attempt', [
+            'slug' => $validated['slug'],
+            'client_found' => (bool) $client,
+            'ip' => $request->ip(),
+        ]);
+
         if (! $client) {
+            Log::warning('Unauthorized token request', [
+                'slug' => $validated['slug'],
+                'ip' => $request->ip(),
+            ]);
             return response()->json(['success' => false, 'message' => 'Cliente no autorizado'], 401);
         }
 
-        // For demo: we accept any "secret" matching name or a simple check.
-        // In production: use proper client secrets stored hashed.
-        
         if ($validated['secret'] !== config('app.client_secret_salt').$client->slug) {
+            Log::warning('Invalid secret for token request', [
+                'slug' => $validated['slug'],
+                'client_id' => $client->id,
+                'ip' => $request->ip(),
+            ]);
             return response()->json(['success' => false, 'message' => 'Credenciales inválidas'], 401);
         }
 
         $token = $client->issueToken('api-access', ['person:read', 'person:write', 'person:sync']);
+
+        Log::info('Token issued successfully', [
+            'slug' => $validated['slug'],
+            'client_id' => $client->id,
+            'ip' => $request->ip(),
+        ]);
 
         return response()->json([
             'success' => true,
