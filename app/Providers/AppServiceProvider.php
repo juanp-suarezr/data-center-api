@@ -20,6 +20,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->app->booted(function () {
+                $kernel = $this->app->make(\App\Console\Kernel::class);
+                $kernel->bootstrap();
+            });
+        }
+
         RateLimiter::for('api', function (Request $request) {
             $client = $request->user();
 
