@@ -3,9 +3,7 @@
 .env
 .env.backup
 .env.production
-config/l5-swagger.php
-l5-swagger.php
-/config/l5-swagger.php
+
 /Controllers/OpenApiController.php
 /app/Http/Controllers/OpenApiController.php
 OpenApiController.php
@@ -24,6 +22,7 @@ OpenApiController.php
 /public/storage
 /storage/*.key
 /storage/pail
+/storage/api-docs/api-docs.json
 /vendor
 Homestead.json
 Homestead.yaml
