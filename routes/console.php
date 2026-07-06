@@ -8,10 +8,7 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('queue:work', [
-    '--stop-when-empty' => true,
-    '--tries' => 3,
-])
-->everyMinute()
-->withoutOverlapping()
-->runInBackground();
+Schedule::command('queue:work --stop-when-empty --tries=3')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->runInBackground();
