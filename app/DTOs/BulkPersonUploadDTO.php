@@ -49,8 +49,12 @@ readonly class BulkPersonUploadDTO
 
             if ($headers === null) {
                 $headers = array_map('trim', array_map('mb_strtolower', $row));
+
                 continue;
             }
+
+            $row = array_slice($row, 0, count($headers));
+            $row = array_pad($row, count($headers), '');
 
             $rows[] = array_combine($headers, $row);
         }
@@ -64,7 +68,7 @@ readonly class BulkPersonUploadDTO
             $tipoDoc = $this->getTipoDocumentoDataCenter($row['tipo_documento'] ?? '');
             $numDoc = $row['numero_documento'] ?? '';
 
-            $hasValidDocument = in_array($tipoDoc, DocumentType::values(), true) && !empty($numDoc) && strlen($numDoc) >= 4;
+            $hasValidDocument = in_array($tipoDoc, DocumentType::values(), true) && ! empty($numDoc) && strlen($numDoc) >= 4;
 
             return $hasValidDocument;
         });
@@ -76,9 +80,9 @@ readonly class BulkPersonUploadDTO
             $tipoDoc = $this->getTipoDocumentoDataCenter($row['tipo_documento'] ?? '');
             $numDoc = $row['numero_documento'] ?? '';
 
-            $isValid = in_array($tipoDoc, DocumentType::values(), true) && !empty($numDoc) && strlen($numDoc) >= 4;
+            $isValid = in_array($tipoDoc, DocumentType::values(), true) && ! empty($numDoc) && strlen($numDoc) >= 4;
 
-            return !$isValid;
+            return ! $isValid;
         });
     }
 
@@ -116,7 +120,7 @@ readonly class BulkPersonUploadDTO
             return null;
         }
 
-        return date('Y-m-d', strtotime('-' . $edad . ' years'));
+        return date('Y-m-d', strtotime('-'.$edad.' years'));
     }
 
     public function getNombreEtniaDataCenter(string $code): ?string
@@ -169,7 +173,7 @@ readonly class BulkPersonUploadDTO
         $tipoDoc = $this->getTipoDocumentoDataCenter($row['tipo_documento'] ?? '');
         $numDoc = $row['numero_documento'] ?? '';
 
-        return in_array($tipoDoc, DocumentType::values(), true) && !empty($numDoc) && strlen($numDoc) >= 4;
+        return in_array($tipoDoc, DocumentType::values(), true) && ! empty($numDoc) && strlen($numDoc) >= 4;
     }
 
     public function cleanRow(array $row): array
@@ -204,7 +208,7 @@ readonly class BulkPersonUploadDTO
             }
         }
 
-        if (!isset($cleaned['nombres']) && !isset($cleaned['apellidos'])) {
+        if (! isset($cleaned['nombres']) && ! isset($cleaned['apellidos'])) {
             if (isset($row['nombre_completo']) || isset($row['fullname'])) {
                 $nombreCompleto = $row['nombre_completo'] ?? $row['fullname'] ?? '';
                 $parts = explode(' ', trim($nombreCompleto));
@@ -235,7 +239,7 @@ readonly class BulkPersonUploadDTO
 
         if (isset($cleaned['edad']) && is_numeric($cleaned['edad'])) {
             $cleaned['edad'] = (int) $cleaned['edad'];
-            if (!isset($cleaned['fecha_nacimiento'])) {
+            if (! isset($cleaned['fecha_nacimiento'])) {
                 $cleaned['fecha_nacimiento'] = $this->getDateDataCenter($cleaned['edad']);
             }
         }
