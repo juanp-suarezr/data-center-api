@@ -53,6 +53,7 @@ class Persona extends Model
         'last_verified_at' => 'datetime',
         'data_quality_score' => 'integer',
         'metadata' => 'array',
+        'dignatario' => 'boolean',
     ];
 
     // ==================== Relationships ====================

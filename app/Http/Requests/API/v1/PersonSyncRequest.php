@@ -24,16 +24,38 @@ class PersonSyncRequest extends FormRequest
             'nombres' => ['required', 'string', 'min:2', 'max:150'],
             'apellidos' => ['required', 'string', 'min:2', 'max:150'],
             'fecha_nacimiento' => ['nullable', 'date', 'before:today'],
+            'edad' => ['nullable', 'integer', 'min:0', 'max:150'],
             'genero' => ['nullable', 'string', 'in:M,F,O,N'],
             'correo' => ['nullable', 'email', 'max:150'],
             'telefono' => ['nullable', 'string', 'max:20'],
             'direccion' => ['nullable', 'array'],
-            'direccion.via_principal' => ['required_with:direccion', 'string', 'max:100'],
-            'direccion.municipio' => ['required_with:direccion', 'string', 'max:100'],
-            'direccion.departamento' => ['required_with:direccion', 'string', 'max:100'],
+            'direccion.via_principal' => ['nullable', 'string', 'max:100'],
+            'direccion.via principal' => ['nullable', 'string', 'max:100'],
+            'direccion.municipio' => ['nullable', 'string', 'max:100'],
+            'direccion.departamento' => ['nullable', 'string', 'max:100'],
+            'direccion.complemento' => ['nullable', 'string', 'max:100'],
+            'sector' => ['nullable', 'string', 'max:100'],
+            'barrio' => ['nullable', 'string', 'max:100'],
+            'comuna' => ['nullable', 'string', 'max:100'],
+            'condicion' => ['nullable', 'string', 'max:100'],
+            'etnia' => ['nullable', 'string', 'max:100'],
+            'nivel_estudio' => ['nullable', 'string', 'max:100'],
+            'dignatario' => ['nullable', 'boolean'],
             'source_project' => ['nullable', 'string', 'max:100'],
             'metadata' => ['nullable', 'array'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('email') && !$this->has('correo')) {
+            $this->merge(['correo' => $this->input('email')]);
+        }
+        if ($this->input('direccion') && isset($this->input('direccion')['via principal']) && !isset($this->input('direccion')['via_principal'])) {
+            $direccion = $this->input('direccion');
+            $direccion['via_principal'] = $direccion['via principal'];
+            $this->merge(['direccion' => $direccion]);
+        }
     }
 
     protected function failedValidation(Validator $validator): void

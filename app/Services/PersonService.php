@@ -49,9 +49,11 @@ class PersonService
      */
     public function syncPerson(PersonData $dto, ApiClient $client): array
     {
+        
+        
         return DB::transaction(function () use ($dto, $client) {
             $existing = $this->repository->findByDocument($dto->tipoDocumento, $dto->numeroDocumento);
-            Log::info('Person found by document', ['tipo' => $dto->tipoDocumento, 'numero' => $dto->numeroDocumento, 'uuid' => $existing->id]);
+            
 
             if ($existing) {
                 $old = $existing->toArray();

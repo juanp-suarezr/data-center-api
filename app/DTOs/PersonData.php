@@ -48,7 +48,7 @@ readonly class PersonData
             edad: Arr::get($data, 'edad') !== null && Arr::get($data, 'edad') !== '' ? (int) Arr::get($data, 'edad') : null,
             fechaNacimiento: Arr::get($data, 'fecha_nacimiento'),
             genero: Arr::get($data, 'genero'),
-            correo: Arr::get($data, 'correo'),
+            correo: Arr::get($data, 'correo', Arr::get($data, 'email')),
             telefono: Arr::get($data, 'telefono'),
             direccion: Arr::get($data, 'direccion'),
             sector: Arr::get($data, 'sector'),
@@ -76,11 +76,15 @@ readonly class PersonData
             'telefono' => $this->telefono,
             'email' => $this->correo,
             'direccion' => is_array($this->direccion)
-                ? trim(($this->direccion['via_principal'] ?? '').' '.($this->direccion['complemento'] ?? ''))
+                ? trim(($this->direccion['via_principal'] ?? $this->direccion['via principal'] ?? '').' '.($this->direccion['complemento'] ?? ''))
                 : $this->direccion,
             'sector' => $this->sector,
             'barrio' => $this->barrio,
             'comuna' => $this->comuna,
+            'condicion' => $this->condicion,
+            'etnia' => $this->etnia,
+            'nivel_estudio' => $this->nivelEstudio,
+            'dignatario' => $this->dignatario,
             'source_project' => $this->sourceProject,
             'created_by_client_id' => $this->clientId,
             'data_quality_score' => 50,
