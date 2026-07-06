@@ -44,16 +44,23 @@ class BulkPersonService
             ];
         }
 
+        $chunkSize = 500;
+        $bus = Bus::batch([]);
         $jobs = [];
-        foreach ($validRows as $index => $row) {
-            $jobs[] = new ProcessBulkPersonUploadJob(
-                record: self::normalizeRow($row),
-                options: $options + ['client_id' => $client->id],
-                uploadBatchId: $batchId
-            );
+
+        foreach (array_chunk($validRows, $chunkSize) as $chunk) {
+            $jobs = [];
+            foreach ($chunk as $row) {
+                $jobs[] = new ProcessBulkPersonUploadJob(
+                    record: self::normalizeRow($row),
+                    options: $options + ['client_id' => $client->id],
+                    uploadBatchId: $batchId
+                );
+            }
+            $bus->add($jobs);
         }
 
-        $batch = Bus::batch($jobs)->dispatch();
+        $batch = $bus->dispatch();
 
         BulkUploadBatch::create([
             'id' => $batchId,
