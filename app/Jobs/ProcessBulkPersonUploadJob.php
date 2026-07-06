@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\DTOs\PersonData;
-use App\Enums\DocumentType;
 use App\Models\ApiClient;
 use App\Models\BulkUploadBatch;
 use Illuminate\Bus\Batchable;
@@ -41,12 +40,13 @@ class ProcessBulkPersonUploadJob implements ShouldQueue
             return;
         }
 
-        $cleanedRecord = $this->cleanRecord($this->record);
+        $cleaner = new \App\DTOs\BulkPersonUploadDTO(
+            rows: [$this->record],
+            sourceProject: '',
+            clientId: ''
+        );
 
-        if (!$this->validateRecord($cleanedRecord)) {
-            $this->incrementCounter($batchRecord, 'error');
-            return;
-        }
+        $cleanedRecord = $cleaner->cleanRow($this->record);
 
         $dto = PersonData::fromArray($cleanedRecord + [
             'client_id' => $client->id,
@@ -91,62 +91,5 @@ class ProcessBulkPersonUploadJob implements ShouldQueue
         if (in_array($field, ['processed_count', 'created_count', 'updated_count', 'error_count'])) {
             $batchRecord->increment($field);
         }
-    }
-
-    private function cleanRecord(array $record): array
-    {
-        $cleaned = [];
-        $fieldMappings = [
-            'nombres' => ['nombres', 'first_name', 'firstname', 'primer_nombre'],
-            'apellidos' => ['apellidos', 'last_name', 'lastname', 'segundo_nombre'],
-            'tipo_documento' => ['tipo_documento', 'document_type', 'tipo', 'type'],
-            'numero_documento' => ['numero_documento', 'document_number', 'numero', 'number'],
-            'edad' => ['edad', 'age'],
-            'fecha_nacimiento' => ['fecha_nacimiento', 'birth_date', 'nacimiento'],
-            'genero' => ['genero', 'gender', 'sexo'],
-            'correo' => ['correo', 'email'],
-            'telefono' => ['telefono', 'phone', 'celular'],
-            'direccion' => ['direccion', 'address'],
-            'sector' => ['sector'],
-            'barrio' => ['barrio', 'neighborhood'],
-            'comuna' => ['comuna', 'commune'],
-            'condicion' => ['condicion', 'condition'],
-            'etnia' => ['etnia', 'ethnicity'],
-            'nivel_estudio' => ['nivel_estudio', 'education'],
-            'dignatario' => ['dignatario', 'is_public', 'public_figure'],
-        ];
-
-        foreach ($fieldMappings as $target => $sources) {
-            foreach ($sources as $source) {
-                if (isset($record[$source]) && $record[$source] !== '') {
-                    $cleaned[$target] = trim((string) $record[$source]);
-                    break;
-                }
-            }
-        }
-
-        if (!isset($cleaned['nombres']) && !isset($cleaned['apellidos'])) {
-            if (isset($record['nombre_completo']) || isset($record['fullname'])) {
-                $nombreCompleto = $record['nombre_completo'] ?? $record['fullname'] ?? '';
-                $parts = explode(' ', trim($nombreCompleto));
-                $cleaned['nombres'] = array_shift($parts) ?? '';
-                $cleaned['apellidos'] = implode(' ', $parts);
-            }
-        }
-
-        if (isset($cleaned['dignatario'])) {
-            $cleaned['dignatario'] = in_array(strtolower($cleaned['dignatario']), ['1', 'true', 'yes', 'si', 'sí'], true);
-        }
-
-        return $cleaned;
-    }
-
-    private function validateRecord(array $record): bool
-    {
-        $documentTypes = DocumentType::values();
-        $tipoDoc = strtoupper($record['tipo_documento'] ?? '');
-        $numDoc = $record['numero_documento'] ?? '';
-
-        return in_array($tipoDoc, $documentTypes, true) && !empty($numDoc) && strlen($numDoc) >= 4;
     }
 }
