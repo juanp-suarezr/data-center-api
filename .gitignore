@@ -3,6 +3,7 @@
 .env
 .env.backup
 .env.production
+config/l5-swagger.php
 l5-swagger.php
 .phpactor.json
 .phpunit.result.cache
