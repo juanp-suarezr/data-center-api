@@ -215,7 +215,7 @@ readonly class BulkPersonUploadDTO
             'telefono' => ['telefono', 'phone', 'celular'],
             'direccion' => ['direccion', 'address'],
             'sector' => ['sector'],
-            'barrio' => ['barrio', 'neighborhood'],
+            'barrio' => ['barrio', 'neighborhood', 'sector'],
             'comuna' => ['comuna', 'commune'],
             'condicion' => ['condicion', 'condition'],
             'etnia' => ['etnia', 'ethnicity'],
