@@ -48,13 +48,21 @@ readonly class BulkPersonUploadDTO
             $row = str_getcsv($line);
 
             if ($headers === null) {
-                $headers = array_map('trim', array_map('mb_strtolower', $row));
+                $headers = array_values(array_filter(array_map('trim', array_map('mb_strtolower', $row)), fn($h) => $h !== ''));
+
+                if (empty($headers)) {
+                    continue;
+                }
 
                 continue;
             }
 
             $row = array_slice($row, 0, count($headers));
             $row = array_pad($row, count($headers), '');
+
+            if (count($headers) !== count($row)) {
+                continue;
+            }
 
             $rows[] = array_combine($headers, $row);
         }
