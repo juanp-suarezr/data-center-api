@@ -31,7 +31,7 @@ class BulkUploadBatch extends Model
 
     protected $casts = [
         'id' => 'string',
-        'batch_id' => 'integer',
+        'batch_id' => 'string',
         'total_records' => 'integer',
         'valid_records' => 'integer',
         'invalid_records' => 'integer',
