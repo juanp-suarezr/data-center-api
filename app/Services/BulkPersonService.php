@@ -47,7 +47,7 @@ class BulkPersonService
         $jobs = [];
         foreach ($validRows as $index => $row) {
             $jobs[] = new ProcessBulkPersonUploadJob(
-                record: $row,
+                record: self::normalizeRow($row),
                 options: $options + ['client_id' => $client->id],
                 uploadBatchId: $batchId
             );
@@ -101,5 +101,32 @@ class BulkPersonService
         }
 
         return $status;
+    }
+
+    /**
+     * Convierte todos los valores de la fila a UTF-8 válido para que el
+     * job pueda serializarse a JSON sin error "Malformed UTF-8 characters".
+     */
+    private static function normalizeRow(array $row): array
+    {
+        $normalized = [];
+
+        foreach ($row as $key => $value) {
+            if (is_string($value)) {
+                $encoding = mb_detect_encoding($value, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+
+                if ($encoding && $encoding !== 'UTF-8') {
+                    $value = mb_convert_encoding($value, 'UTF-8', $encoding);
+                }
+
+                $value = mb_convert_encoding($value, 'UTF-8', 'UTF-8');
+                $value = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/u', '', $value) ?? $value;
+                $normalized[$key] = $value;
+            } else {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 }

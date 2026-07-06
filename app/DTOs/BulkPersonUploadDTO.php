@@ -19,6 +19,7 @@ readonly class BulkPersonUploadDTO
 
     public static function fromUploadedFile(string $content, array $options = []): self
     {
+        $content = self::toUtf8($content);
         $rows = self::parseCsv($content);
 
         return new self(
@@ -28,6 +29,17 @@ readonly class BulkPersonUploadDTO
             skipInvalid: Arr::get($options, 'skip_invalid', true),
             updateExisting: Arr::get($options, 'update_existing', true),
         );
+    }
+
+    public static function toUtf8(string $content): string
+    {
+        $encoding = mb_detect_encoding($content, ['UTF-8', 'ISO-8859-1', 'Windows-1252'], true);
+
+        if ($encoding && $encoding !== 'UTF-8') {
+            $content = mb_convert_encoding($content, 'UTF-8', $encoding);
+        }
+
+        return $content;
     }
 
     public static function parseCsv(string $content): array
