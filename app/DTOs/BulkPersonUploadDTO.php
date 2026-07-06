@@ -37,6 +37,8 @@ readonly class BulkPersonUploadDTO
             return [];
         }
 
+        $delimiter = self::detectDelimiter($content);
+
         $headers = null;
         $rows = [];
 
@@ -45,7 +47,7 @@ readonly class BulkPersonUploadDTO
                 continue;
             }
 
-            $row = str_getcsv($line);
+            $row = str_getcsv($line, $delimiter);
 
             if ($headers === null) {
                 $headers = array_values(array_filter(array_map('trim', array_map('mb_strtolower', $row)), fn($h) => $h !== ''));
@@ -70,27 +72,41 @@ readonly class BulkPersonUploadDTO
         return $rows;
     }
 
+    public static function detectDelimiter(string $content): string
+    {
+        $firstLine = strtok($content, "\n") ?: $content;
+        $counts = [
+            ';' => substr_count($firstLine, ';'),
+            ',' => substr_count($firstLine, ','),
+            "\t" => substr_count($firstLine, "\t"),
+        ];
+
+        arsort($counts);
+
+        return array_key_first($counts) ?? ',';
+    }
+
     public function getValidRows(): array
     {
         return array_filter($this->rows, function ($row) {
-            $tipoDoc = $this->getTipoDocumentoDataCenter($row['tipo_documento'] ?? '');
-            $numDoc = $row['numero_documento'] ?? '';
+            $cleaned = $this->cleanRow($row);
 
-            $hasValidDocument = in_array($tipoDoc, DocumentType::values(), true) && ! empty($numDoc) && strlen($numDoc) >= 4;
+            $tipoDoc = $cleaned['tipo_documento'] ?? '';
+            $numDoc = $cleaned['numero_documento'] ?? '';
 
-            return $hasValidDocument;
+            return ! empty($tipoDoc) && ! empty($numDoc) && strlen($numDoc) >= 4;
         });
     }
 
     public function getInvalidRows(): array
     {
         return array_filter($this->rows, function ($row) {
-            $tipoDoc = $this->getTipoDocumentoDataCenter($row['tipo_documento'] ?? '');
-            $numDoc = $row['numero_documento'] ?? '';
+            $cleaned = $this->cleanRow($row);
 
-            $isValid = in_array($tipoDoc, DocumentType::values(), true) && ! empty($numDoc) && strlen($numDoc) >= 4;
+            $tipoDoc = $cleaned['tipo_documento'] ?? '';
+            $numDoc = $cleaned['numero_documento'] ?? '';
 
-            return ! $isValid;
+            return empty($tipoDoc) || empty($numDoc) || strlen($numDoc) < 4;
         });
     }
 
@@ -191,7 +207,7 @@ readonly class BulkPersonUploadDTO
             'nombres' => ['nombres', 'first_name', 'firstname', 'primer_nombre'],
             'apellidos' => ['apellidos', 'last_name', 'lastname', 'segundo_nombre'],
             'tipo_documento' => ['tipo_documento', 'document_type', 'tipo', 'type'],
-            'numero_documento' => ['numero_documento', 'document_number', 'numero', 'number'],
+            'numero_documento' => ['numero_documento', 'document_number', 'numero', 'number', 'identificacion', 'identification'],
             'edad' => ['edad', 'age'],
             'fecha_nacimiento' => ['fecha_nacimiento', 'birth_date', 'nacimiento'],
             'genero' => ['genero', 'gender', 'sexo'],

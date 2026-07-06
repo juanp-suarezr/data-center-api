@@ -20,6 +20,30 @@ class BulkPersonService
 
         $validRows = $dto->getValidRows();
 
+        if (count($validRows) === 0) {
+            $batchId = (string) Str::uuid();
+
+            BulkUploadBatch::create([
+                'id' => $batchId,
+                'batch_id' => $batchId,
+                'client_id' => $client->id,
+                'total_records' => count($dto->rows),
+                'valid_records' => 0,
+                'invalid_records' => count($dto->getInvalidRows()),
+                'status' => 'failed',
+            ]);
+
+            return [
+                'batch_id' => $batchId,
+                'job_batch_id' => null,
+                'total_records' => count($dto->rows),
+                'valid_records' => 0,
+                'invalid_records' => count($dto->getInvalidRows()),
+                'status' => 'failed',
+                'message' => 'No se encontraron registros válidos en el archivo',
+            ];
+        }
+
         $jobs = [];
         foreach ($validRows as $index => $row) {
             $jobs[] = new ProcessBulkPersonUploadJob(
