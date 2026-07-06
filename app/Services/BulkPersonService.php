@@ -44,11 +44,19 @@ class BulkPersonService
             ];
         }
 
-        $chunkSize = 500;
-        $bus = Bus::batch([]);
-        $jobs = [];
+        $chunkSize = 200;
+        $jobBatchIds = [];
+        $totalValid = count($validRows);
 
-        foreach (array_chunk($validRows, $chunkSize) as $chunk) {
+        \Illuminate\Support\Facades\Log::info('BulkPersonService: iniciando inserción de jobs', [
+            'upload_batch_id' => $batchId,
+            'total_filas' => count($dto->rows),
+            'filas_validas' => $totalValid,
+            'chunk_size' => $chunkSize,
+            'chunks' => (int) ceil($totalValid / $chunkSize),
+        ]);
+
+        foreach (array_chunk($validRows, $chunkSize) as $index => $chunk) {
             $jobs = [];
             foreach ($chunk as $row) {
                 $jobs[] = new ProcessBulkPersonUploadJob(
@@ -57,26 +65,35 @@ class BulkPersonService
                     uploadBatchId: $batchId
                 );
             }
-            $bus->add($jobs);
-        }
 
-        $batch = $bus->dispatch();
+            $batch = Bus::batch($jobs)->dispatch();
+            $jobBatchIds[] = $batch->id;
+
+            \Illuminate\Support\Facades\Log::info('BulkPersonService: chunk despachado', [
+                'upload_batch_id' => $batchId,
+                'chunk' => $index + 1,
+                'jobs_en_chunk' => count($jobs),
+                'job_batch_id' => $batch->id,
+            ]);
+        }
 
         BulkUploadBatch::create([
             'id' => $batchId,
-            'batch_id' => $batch->id,
+            'batch_id' => $batchId,
             'client_id' => $client->id,
             'total_records' => count($dto->rows),
-            'valid_records' => count($validRows),
+            'valid_records' => $totalValid,
             'invalid_records' => count($dto->getInvalidRows()),
+            'job_batch_ids' => $jobBatchIds,
             'status' => 'processing',
         ]);
 
         return [
             'batch_id' => $batchId,
-            'job_batch_id' => $batch->id,
+            'job_batch_ids' => $jobBatchIds,
+            'chunks' => count($jobBatchIds),
             'total_records' => count($dto->rows),
-            'valid_records' => count($validRows),
+            'valid_records' => $totalValid,
             'invalid_records' => count($dto->getInvalidRows()),
             'message' => 'Procesamiento en cola iniciado',
         ];
@@ -105,6 +122,31 @@ class BulkPersonService
             $status['pending_jobs'] = $laravelBatch->pendingJobs;
             $status['processed_jobs'] = $laravelBatch->processedJobs ?: 0;
             $status['failed_jobs'] = $laravelBatch->failedJobs;
+        }
+
+        $jobBatchIds = $batchRecord->job_batch_ids ?? [];
+        if (is_array($jobBatchIds) && count($jobBatchIds) > 0) {
+            $pending = 0;
+            $processed = 0;
+            $failed = 0;
+            $totalJobs = 0;
+
+            foreach ($jobBatchIds as $jobBatchId) {
+                $sub = Bus::findBatch($jobBatchId);
+                if (!$sub) {
+                    continue;
+                }
+                $pending += $sub->pendingJobs;
+                $processed += $sub->processedJobs ?: 0;
+                $failed += $sub->failedJobs;
+                $totalJobs += $sub->totalJobs;
+            }
+
+            $status['pending_jobs'] = $pending;
+            $status['processed_jobs'] = $processed;
+            $status['failed_jobs'] = $failed;
+            $status['total_jobs'] = $totalJobs;
+            $status['progress'] = $totalJobs > 0 ? round(($processed / $totalJobs) * 100, 2) : 0;
         }
 
         return $status;

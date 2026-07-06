@@ -22,6 +22,7 @@ class BulkUploadBatch extends Model
         'valid_records',
         'invalid_records',
         'status',
+        'job_batch_ids',
         'processed_count',
         'created_count',
         'updated_count',
@@ -32,6 +33,7 @@ class BulkUploadBatch extends Model
     protected $casts = [
         'id' => 'string',
         'batch_id' => 'string',
+        'job_batch_ids' => 'array',
         'total_records' => 'integer',
         'valid_records' => 'integer',
         'invalid_records' => 'integer',
