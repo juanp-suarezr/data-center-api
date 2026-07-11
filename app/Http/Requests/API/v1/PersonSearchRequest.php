@@ -21,6 +21,7 @@ class PersonSearchRequest extends FormRequest
         return [
             'tipo_documento' => ['sometimes', 'string', 'in:'.implode(',', DocumentType::values())],
             'numero_documento' => ['sometimes', 'string', 'min:4', 'max:20'],
+            'source_project' => ['nullable', 'string', 'max:100'],
             'document' => ['sometimes', 'string', 'min:4', 'max:30'],
             'nombres' => ['sometimes', 'string', 'min:2', 'max:100'],
             'apellidos' => ['sometimes', 'string', 'min:2', 'max:100'],

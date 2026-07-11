@@ -12,7 +12,7 @@ interface PersonRepositoryInterface
 {
     public function findByUuid(string $uuid): ?Persona;
 
-    public function findByDocument(string $tipoDocumento, string $numeroDocumento): ?Persona;
+    public function findByDocument(string $tipoDocumento, string $numeroDocumento, ?string $sourceProject): ?Persona;
 
     public function search(array $criteria, int $perPage = 15): LengthAwarePaginator;
 

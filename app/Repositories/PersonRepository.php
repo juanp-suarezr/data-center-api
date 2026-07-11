@@ -12,6 +12,7 @@ use App\Models\PersonProjectRelation;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PersonRepository implements PersonRepositoryInterface
 {
@@ -21,11 +22,19 @@ class PersonRepository implements PersonRepositoryInterface
             ->find($uuid);
     }
 
-    public function findByDocument(string $tipoDocumento, string $numeroDocumento): ?Persona
+    public function findByDocument(string $tipoDocumento, string $numeroDocumento, ?string $sourceProject): ?Persona
     {
-        return Persona::with(['contacts', 'addresses'])
-            ->byDocument($tipoDocumento, $numeroDocumento)
-            ->first();
+        
+
+        $query = Persona::with(['contacts', 'addresses'])
+            ->byDocument($tipoDocumento, $numeroDocumento);
+
+        // Only exclude if sourceProject is explicitly provided (from sync endpoint)
+        if ($sourceProject) {
+            $query->where('source_project', '!=', $sourceProject);
+        }
+
+        return $query->first();
     }
 
     public function search(array $criteria, int $perPage = 15): LengthAwarePaginator

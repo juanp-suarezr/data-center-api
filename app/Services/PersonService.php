@@ -32,14 +32,11 @@ class PersonService
         });
     }
 
-    public function findByDocument(string $tipo, string $numero): ?Persona
+    public function findByDocument(string $tipo, string $numero, string $sourceProject = null): ?Persona
     {
-        $person = $this->repository->findByDocument($tipo, $numero);
+        $person = $this->repository->findByDocument($tipo, $numero, $sourceProject);
 
-        if ($person) {
-            Log::info('Person found by document', ['tipo' => $tipo, 'numero' => $numero, 'uuid' => $person->id]);
-        }
-
+        
         return $person;
     }
 

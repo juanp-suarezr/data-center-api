@@ -13,6 +13,7 @@ use App\Http\Resources\API\v1\PersonResource;
 use App\Services\PersonService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(name: 'Persons', description: 'Master Data Management - Personas')]
@@ -33,6 +34,7 @@ class PersonController extends Controller
     )]
     public function search(PersonSearchRequest $request): JsonResponse
     {
+        
 
         $persons = $this->personService->searchPerson($request->validated());
 
@@ -121,6 +123,7 @@ class PersonController extends Controller
         parameters: [
             new OA\Parameter(name: 'tipo_documento', in: 'query', required: true, schema: new OA\Schema(type: 'string'), description: 'Tipo de documento (CC, TI, CE, etc.)'),
             new OA\Parameter(name: 'numero_documento', in: 'query', required: true, schema: new OA\Schema(type: 'string'), description: 'Número del documento'),
+            new OA\Parameter(name: 'source_project', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Fuente del proyecto, para excluir personas sincronizadas con este proyecto'),
         ],
         responses: [
             new OA\Response(response: 200, description: "Persona encontrada"),
@@ -132,9 +135,10 @@ class PersonController extends Controller
         $validated = $request->validate([
             'tipo_documento' => ['required', 'string'],
             'numero_documento' => ['required', 'string'],
+            'source_project' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $person = $this->personService->findByDocument($validated['tipo_documento'], $validated['numero_documento']);
+        $person = $this->personService->findByDocument($validated['tipo_documento'], $validated['numero_documento'], $validated['source_project']);
 
         if (! $person) {
             return response()->json(['success' => false, 'message' => 'Persona no encontrada'], 404);
