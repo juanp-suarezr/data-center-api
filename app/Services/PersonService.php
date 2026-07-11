@@ -58,9 +58,15 @@ class PersonService
                 $updateData = $dto->toArray();
                 unset($updateData['data_quality_score']);
 
+                // La persona puede provenir de varios proyectos; se acumulan
+                // (ej: creada en "vive-digital" y luego registrada en "votaciones").
+                $updateData['source_project'] = $this->mergeSourceProjects(
+                    $existing->source_project,
+                    $dto->sourceProject ?: [$client->slug]
+                );
+
                 $updated = $this->repository->update($existing, $updateData + [
                     'updated_by_client_id' => $client->id,
-                    'source_project' => $dto->sourceProject ?? $client->slug,
                 ]);
 
                  $this->repository->attachProjectRelation($updated, $client->slug, [
@@ -78,9 +84,11 @@ class PersonService
             }
 
              // Create new
-             $person = $this->repository->create($dto->toArray() + [
+             $createData = $dto->toArray();
+             $createData['source_project'] = $dto->sourceProject ?: [$client->slug];
+
+             $person = $this->repository->create($createData + [
                  'created_by_client_id' => $client->id,
-                 'source_project' => $dto->sourceProject ?? $client->slug,
              ]);
 
              $this->repository->attachProjectRelation($person, $client->slug, [
@@ -102,5 +110,27 @@ class PersonService
     public function getPerson(string $uuid): ?Persona
     {
         return $this->repository->findByUuid($uuid);
+    }
+
+    /**
+     * Combina los proyectos origen existentes con los nuevos, sin duplicados.
+     * Acepta valores en formato array o string (compatibilidad con datos previos).
+     */
+    private function mergeSourceProjects(array|string|null $existing, array|string|null $incoming): array
+    {
+        $normalize = static function (array|string|null $value): array {
+            if ($value === null || $value === '') {
+                return [];
+            }
+            $items = is_array($value) ? $value : [$value];
+            $items = array_map(static fn ($item) => trim((string) $item), $items);
+
+            return array_filter($items, static fn ($item) => $item !== '');
+        };
+
+        return array_values(array_unique(array_merge(
+            $normalize($existing),
+            $normalize($incoming)
+        )));
     }
 }

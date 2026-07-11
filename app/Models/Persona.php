@@ -53,6 +53,7 @@ class Persona extends Model
         'last_verified_at' => 'datetime',
         'data_quality_score' => 'integer',
         'metadata' => 'array',
+        'source_project' => 'array',
         'dignatario' => 'boolean',
     ];
 
@@ -98,7 +99,7 @@ class Persona extends Model
 
     public function scopeFromProject($query, string $project)
     {
-        return $query->where('source_project', $project);
+        return $query->whereJsonContains('source_project', $project);
     }
 
     // ==================== Accessors & Mutators ====================

@@ -44,7 +44,7 @@ class ProcessBulkPersonUploadJob implements ShouldQueue
         try {
             $cleaner = new \App\DTOs\BulkPersonUploadDTO(
                 rows: [$this->record],
-                sourceProject: '',
+                sourceProject: [],
                 clientId: ''
             );
 
@@ -60,10 +60,18 @@ class ProcessBulkPersonUploadJob implements ShouldQueue
             DB::transaction(function () use ($dto, $client, $repository, $batchRecord) {
                 $existing = $repository->findByDocument($dto->tipoDocumento, $dto->numeroDocumento);
 
+                $incomingProjects = $dto->sourceProject ?: [$client->slug];
+
                 if ($existing && ($this->options['update_existing'] ?? true)) {
-                    $repository->update($existing, $dto->toArray() + [
+                    // Acumular proyectos origen sin duplicar.
+                    $existingProjects = PersonData::normalizeSourceProject($existing->source_project);
+                    $mergedProjects = array_values(array_unique(array_merge($existingProjects, $incomingProjects)));
+
+                    $updateData = $dto->toArray();
+                    $updateData['source_project'] = $mergedProjects;
+
+                    $repository->update($existing, $updateData + [
                         'updated_by_client_id' => $client->id,
-                        'source_project' => $dto->sourceProject ?? $client->slug,
                     ]);
                     $repository->attachProjectRelation($existing, $client->slug, [
                         'last_action' => 'bulk_update',
@@ -71,9 +79,11 @@ class ProcessBulkPersonUploadJob implements ShouldQueue
                     ]);
                     $this->incrementCounter($batchRecord, 'updated');
                 } else {
-                    $person = $repository->create($dto->toArray() + [
+                    $createData = $dto->toArray();
+                    $createData['source_project'] = $incomingProjects;
+
+                    $person = $repository->create($createData + [
                         'created_by_client_id' => $client->id,
-                        'source_project' => $dto->sourceProject ?? $client->slug,
                     ]);
                     $repository->attachProjectRelation($person, $client->slug, [
                         'last_action' => 'bulk_create',

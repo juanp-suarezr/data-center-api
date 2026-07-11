@@ -21,7 +21,8 @@ class BulkPersonUploadRequest extends FormRequest
             'file' => ['required', 'file', 'mimes:csv,txt,sql', 'max:10240'],
             'skip_invalid' => ['nullable', 'boolean'],
             'update_existing' => ['nullable', 'boolean'],
-            'source_project' => ['nullable', 'string', 'max:100'],
+            'source_project' => ['nullable', 'array'],
+            'source_project.*' => ['string', 'max:100'],
         ];
     }
 
@@ -32,6 +33,11 @@ class BulkPersonUploadRequest extends FormRequest
         }
         if ($this->has('update_existing')) {
             $this->merge(['update_existing' => filter_var($this->input('update_existing'), FILTER_VALIDATE_BOOLEAN)]);
+        }
+        // Permitir enviar source_project como string simple; se normaliza a array.
+        if ($this->has('source_project') && is_string($this->input('source_project'))) {
+            $value = trim($this->input('source_project'));
+            $this->merge(['source_project' => $value === '' ? [] : [$value]]);
         }
     }
 

@@ -11,7 +11,7 @@ readonly class BulkPersonUploadDTO
 {
     public function __construct(
         public array $rows,
-        public ?string $sourceProject = null,
+        public array $sourceProject = [],
         public string $clientId,
         public bool $skipInvalid = true,
         public bool $updateExisting = true,
@@ -24,7 +24,7 @@ readonly class BulkPersonUploadDTO
 
         return new self(
             rows: $rows,
-            sourceProject: Arr::get($options, 'source_project', config('app.name')),
+            sourceProject: PersonData::normalizeSourceProject(Arr::get($options, 'source_project', config('app.name'))),
             clientId: Arr::get($options, 'client_id'),
             skipInvalid: Arr::get($options, 'skip_invalid', true),
             updateExisting: Arr::get($options, 'update_existing', true),

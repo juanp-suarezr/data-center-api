@@ -41,7 +41,9 @@ return new class extends Migration
 
             // Provenance & quality
             $table->unsignedTinyInteger('data_quality_score')->default(50);
-            $table->string('source_project', 100)->nullable();
+            // Puede provenir de varios proyectos (ej: vive-digital, votaciones),
+            // por eso se almacena como JSON (array de slugs, cada uno string de max 100).
+            $table->json('source_project')->nullable();
             $table->timestamp('last_verified_at')->nullable();
 
             $table->uuid('created_by_client_id')->nullable();

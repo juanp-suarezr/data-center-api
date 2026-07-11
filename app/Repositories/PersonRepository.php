@@ -22,16 +22,18 @@ class PersonRepository implements PersonRepositoryInterface
             ->find($uuid);
     }
 
-    public function findByDocument(string $tipoDocumento, string $numeroDocumento, ?string $sourceProject): ?Persona
+    public function findByDocument(string $tipoDocumento, string $numeroDocumento, ?string $sourceProject = null): ?Persona
     {
-        
-
         $query = Persona::with(['contacts', 'addresses'])
             ->byDocument($tipoDocumento, $numeroDocumento);
 
-        // Only exclude if sourceProject is explicitly provided (from sync endpoint)
+        // Solo excluir si sourceProject viene explícito (endpoint find/sync).
+        // source_project es un array (JSON), por lo que se excluyen las personas
+        // cuyo array de proyectos CONTENGA el proyecto indicado. Así, tanto una
+        // persona registrada solo en "votaciones" como otra en "votaciones" y
+        // "vive-digital" quedan excluidas al filtrar por "votaciones".
         if ($sourceProject) {
-            $query->where('source_project', '!=', $sourceProject);
+            $query->whereJsonDoesntContain('source_project', $sourceProject);
         }
 
         return $query->first();

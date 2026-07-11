@@ -33,4 +33,12 @@ class PersonSyncRequestSchema
 
     #[OA\Property(property: 'direccion', type: 'object')]
     public ?array $direccion = null;
+
+    #[OA\Property(
+        property: 'source_project',
+        type: 'array',
+        items: new OA\Items(type: 'string', maxLength: 100),
+        description: 'Proyectos origen (ej: ["vive-digital", "votaciones"]). Se acumulan al sincronizar.'
+    )]
+    public ?array $source_project = null;
 }

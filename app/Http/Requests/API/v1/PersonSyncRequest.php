@@ -41,7 +41,8 @@ class PersonSyncRequest extends FormRequest
             'etnia' => ['nullable', 'string', 'max:100'],
             'nivel_estudio' => ['nullable', 'string', 'max:100'],
             'dignatario' => ['nullable', 'boolean'],
-            'source_project' => ['nullable', 'string', 'max:100'],
+            'source_project' => ['nullable', 'array'],
+            'source_project.*' => ['string', 'max:100'],
             'metadata' => ['nullable', 'array'],
         ];
     }
@@ -50,6 +51,11 @@ class PersonSyncRequest extends FormRequest
     {
         if ($this->has('email') && !$this->has('correo')) {
             $this->merge(['correo' => $this->input('email')]);
+        }
+        // Permitir enviar source_project como string simple; se normaliza a array.
+        if ($this->has('source_project') && is_string($this->input('source_project'))) {
+            $value = trim($this->input('source_project'));
+            $this->merge(['source_project' => $value === '' ? [] : [$value]]);
         }
         if ($this->input('direccion') && isset($this->input('direccion')['via principal']) && !isset($this->input('direccion')['via_principal'])) {
             $direccion = $this->input('direccion');

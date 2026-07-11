@@ -28,7 +28,7 @@ readonly class PersonData
         public ?string $etnia = null,
         public ?string $nivelEstudio = null,
         public bool $dignatario = false,
-        public ?string $sourceProject = null,
+        public array $sourceProject = [],
         public ?string $clientId = null,
         public array $metadata = [],
     ) {}
@@ -58,10 +58,28 @@ readonly class PersonData
             etnia: Arr::get($data, 'etnia'),
             nivelEstudio: Arr::get($data, 'nivel_estudio'),
             dignatario: (bool) Arr::get($data, 'dignatario', false),
-            sourceProject: Arr::get($data, 'source_project'),
+            sourceProject: self::normalizeSourceProject(Arr::get($data, 'source_project')),
             clientId: Arr::get($data, 'client_id'),
             metadata: Arr::get($data, 'metadata', []),
         );
+    }
+
+    /**
+     * Normaliza el proyecto origen a un array de slugs.
+     * Acepta string (uno solo) o array (varios) y descarta valores vacíos.
+     */
+    public static function normalizeSourceProject(string|array|null $source): array
+    {
+        if ($source === null || $source === '') {
+            return [];
+        }
+
+        $items = is_array($source) ? $source : [$source];
+
+        $items = array_map(fn ($item) => trim((string) $item), $items);
+        $items = array_filter($items, fn ($item) => $item !== '');
+
+        return array_values(array_unique($items));
     }
 
     public function toArray(): array
