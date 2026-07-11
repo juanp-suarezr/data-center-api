@@ -49,7 +49,7 @@ class PersonService
         
         
         return DB::transaction(function () use ($dto, $client) {
-            $existing = $this->repository->findByDocument($dto->tipoDocumento, $dto->numeroDocumento);
+            $existing = $this->repository->findByDocument($dto->tipoDocumento, $dto->numeroDocumento, null);
             
 
             if ($existing) {
