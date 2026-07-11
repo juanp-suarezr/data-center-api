@@ -11,7 +11,7 @@ readonly class BulkPersonUploadDTO
 {
     public function __construct(
         public array $rows,
-        public string $sourceProject,
+        public ?string $sourceProject = null,
         public string $clientId,
         public bool $skipInvalid = true,
         public bool $updateExisting = true,

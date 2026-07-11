@@ -32,7 +32,7 @@ class PersonService
         });
     }
 
-    public function findByDocument(string $tipo, string $numero, string $sourceProject = null): ?Persona
+    public function findByDocument(string $tipo, string $numero, ?string $sourceProject = null): ?Persona
     {
         $person = $this->repository->findByDocument($tipo, $numero, $sourceProject);
 

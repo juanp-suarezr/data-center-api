@@ -138,7 +138,7 @@ class PersonController extends Controller
             'source_project' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $person = $this->personService->findByDocument($validated['tipo_documento'], $validated['numero_documento'], $validated['source_project']);
+        $person = $this->personService->findByDocument($validated['tipo_documento'], $validated['numero_documento'], $validated['source_project'] ?? null);
 
         if (! $person) {
             return response()->json(['success' => false, 'message' => 'Persona no encontrada'], 404);
